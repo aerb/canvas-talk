@@ -1,0 +1,11 @@
+build/
+captures/
+.gradle/
+local.properties
+signing.properties
+google-services.json
+*.iml
+.idea/
+.DS_Store
+.tmp/
+fabric.properties
