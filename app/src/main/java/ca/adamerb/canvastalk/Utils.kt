@@ -10,6 +10,7 @@ import android.util.Log
 
 val PixelScale = AppContext.resources.displayMetrics.xdpi / 144f
 inline fun dp(pixels: Int): Float = pixels * PixelScale
+inline fun dp(pixels: Float): Float = pixels * PixelScale
 
 fun mixColor(c0: Int, c1: Int, amount: Float): Int =
     rgb(

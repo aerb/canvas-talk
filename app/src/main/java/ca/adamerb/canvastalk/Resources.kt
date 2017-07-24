@@ -7,6 +7,8 @@ import android.graphics.Typeface
 const val Shade0 = 0xff2F4172.toInt()
 const val Shade1 = 0xff7986AC.toInt()
 const val Shade2 = 0xff4F608F.toInt()
+const val Shade3 = 0xff162756.toInt()
+
 const val White = 0xffffffff.toInt()
 
 
@@ -16,6 +18,8 @@ val UbuntuBold =
         "Ubuntu-Bold.ttf"
     )!!
 
+val PaddingF = dp(20)
+val Padding = PaddingF.toInt()
 
 val RectBuffer = Rect()
 val FontMetricsBuffer = Paint.FontMetrics()
