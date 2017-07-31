@@ -20,6 +20,14 @@ fun mixColor(c0: Int, c1: Int, amount: Float): Int =
     )
 
 
+inline fun <T> ArrayList<T>.forEachIndexed(function: (i: Int, value: T) -> Unit) {
+    val size = this.size
+    var i = 0
+    while(i < size) {
+        function(i, this[i])
+        i++
+    }
+}
 
 fun runAnimation(
     duration: Long = 500,
@@ -32,22 +40,13 @@ fun runAnimation(
                 onEnd(animation as ValueAnimator)
             }
 
-            override fun onAnimationCancel(animation: Animator?) {
-
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-
-            }
-
-            override fun onAnimationRepeat(animation: Animator?) {
-
-            }
-
             override fun onAnimationUpdate(animation: ValueAnimator) {
                 onUpdate.invoke(animatedFraction)
             }
 
+            override fun onAnimationCancel(animation: Animator?) {}
+            override fun onAnimationStart(animation: Animator?) {}
+            override fun onAnimationRepeat(animation: Animator?) {}
         }
         addUpdateListener(callbacks)
         addListener(callbacks)

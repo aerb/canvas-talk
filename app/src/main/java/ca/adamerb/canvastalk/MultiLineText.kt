@@ -4,7 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PointF
 
-enum class Align { Left, Right }
+enum class Align { Left, Right, Center }
 
 class MultiLineText(
     var text: String = "",
@@ -75,11 +75,16 @@ class MultiLineText(
         var y = position.y + ascent
         for (i in 0..lines.size - 1) {
             val line = lines[i]
-            if(align == Align.Left) {
-                canvas.drawText(line, position.x, y, paint)
-            } else {
-                val lineWidth = paint.measureText(line)
-                canvas.drawText(line, position.x + width - lineWidth, y, paint)
+            when (align) {
+                Align.Left -> canvas.drawText(line, position.x, y, paint)
+                Align.Right -> {
+                    val lineWidth = paint.measureText(line)
+                    canvas.drawText(line, position.x + width - lineWidth, y, paint)
+                }
+                Align.Center -> {
+                    val lineWidth = paint.measureText(line)
+                    canvas.drawText(line, position.x + width / 2 - lineWidth / 2, y, paint)
+                }
             }
             y += textHeight
         }

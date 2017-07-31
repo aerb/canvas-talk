@@ -11,16 +11,47 @@ Canvas API
 
 ---
 
+This talk has come out of frustrations I've had with the Android Community
+overlooking the canvas Api.
+
+If you go on Stack overflow and lookup drawing a rounded rectangle, or a dividing
+line you often get pointed to xml.
+
+This talk is meant to demonstrate the uses of the Canvas API in Android.
+
+---
+
 Talk format.
 - These slides are created using only the Android Canvas Api.
-- One Activity, One Overriden view, Zero Fragments.
+- One Activity, One Overriden View, Zero Fragments, Zero Drawables.
 - No libraries with the exception of the Kotlin StdLib.
 - Download the app @ _________
 
 ---
 
-What? The Android Graphics Pipeline
--
+What? The Android Graphics Api
+
+Android Layouts & Resource XML ->
+Views (LinearLayout / ImageView / TextView) ->
+Canvas API ->
+OpenGL Display List, Software Drawing Commands
+
+---
+
+The Basics:
+
+- A canvas object is most often attained by overriding the onDraw function of a view.
+- Canvas object has series of draw*() methods for drawing primitive shapes.
+    - drawLine, drawCircle, drawRoundedRect
+- All draw*() methods take arguments that describe draw coordinates, and an instance of a paint
+ object.
+- Paint describes color, path effect, color-filters.
+    - For more complex shapes you can use drawPath, drawText, drawBitmap
+
+
+
+
+
 
 
 ---
@@ -33,12 +64,6 @@ What? The Android Graphics Pipeline
 - Backward compatible.
 
 ---
-
-
-
-
-
-
 
 
 */
@@ -107,7 +132,7 @@ class Slide1(private val view: SlideHolderView): Slide {
         Paint().apply {
             isAntiAlias = true
             style = Paint.Style.STROKE
-            strokeWidth = dp(3)
+            strokeWidth = StrokeWidth
             color = White
         }
 
@@ -176,6 +201,105 @@ class Slide1(private val view: SlideHolderView): Slide {
 }
 
 class Slide2(private val view: SlideHolderView): Slide {
+
+    private val paint =
+        Paint().apply {
+            color = White
+            isAntiAlias = true
+            strokeWidth = StrokeWidth
+        }
+
+    val title = MultiLineText(
+        text = "What? The Android Graphics Api",
+        paint = Paint().apply {
+            textSize = dp(25)
+            color = White
+            typeface = UbuntuBold
+            isAntiAlias = true
+        }
+    )
+
+
+    private var lineStart: Float = 0f
+    private var lineWidth: Float = 0f
+    private var lineY: Float = 0f
+    private var lineAnimation: Float = 0f
+
+    init {
+        runAnimation(duration = 1000) { t ->
+            lineAnimation = t
+            paint.alpha = (t * 255).toInt()
+            view.invalidate()
+        }
+    }
+
+    override fun onLayout(width: Int, height: Int) {
+        lineStart = PaddingF
+        lineWidth = width - PaddingF * 2
+
+        val layoutWidth = width - Padding * 2
+        title.position.set(PaddingF, PaddingF)
+        title.layoutText(layoutWidth)
+
+        lineY = title.position.y + title.height + dp(1)
+
+        var y = lineY + dp(20)
+        items.forEachIndexed { _, value ->
+            value.layoutText(width)
+            value.position.set(0f, y)
+            y += value.height + dp(20)
+        }
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        RectBuffer.set(0, 0, view.width, view.height)
+        paint.color = Shade3
+        canvas.drawRect(RectBuffer, paint)
+
+        canvas.saveLayer(0f, 0f, view.width.toFloat(), view.height.toFloat(), paint, Canvas.ALL_SAVE_FLAG)
+
+        paint.color = White
+        canvas.drawLine(lineStart, lineY, lineStart + (lineWidth) * lineAnimation, lineY, paint)
+
+        title.onDraw(canvas)
+
+        items.forEachIndexed { _, value ->
+            value.onDraw(canvas)
+        }
+
+        canvas.restore()
+    }
+
+    private val items = ArrayList<MultiLineText>()
+
+    fun animateItem() {
+        onLayout(view.width, view.height)
+        runAnimation { t ->
+            items.last().paint.alpha = (t * 255).toInt()
+            view.invalidate()
+        }
+    }
+
+    override fun onClick() {
+        if(items.size > 3) return
+
+        items += MultiLineText(
+            text = when(items.size) {
+                0 -> "Android Layouts & Resource XML"
+                1 -> "Views (LinearLayout / ImageView / TextView)"
+                2 -> "Canvas API"
+                3 -> "OpenGL Display List, Software Drawing Commands"
+                else -> throw IllegalStateException()
+            },
+            align = Align.Center
+        )
+        animateItem()
+    }
+}
+
+
+
+class Slide3(private val view: SlideHolderView): Slide {
 
     private val paint =
         Paint().apply {

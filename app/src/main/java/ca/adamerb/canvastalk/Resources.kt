@@ -20,6 +20,7 @@ val UbuntuBold =
 
 val PaddingF = dp(20)
 val Padding = PaddingF.toInt()
+val StrokeWidth = dp(3)
 
 val RectBuffer = Rect()
 val FontMetricsBuffer = Paint.FontMetrics()
