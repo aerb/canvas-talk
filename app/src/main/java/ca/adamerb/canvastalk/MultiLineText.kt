@@ -18,6 +18,8 @@ class MultiLineText(
     val align: Align = Align.Left
 ) {
     private val lines = ArrayList<String>()
+    private val lineWidths = ArrayList<Int>()
+
     val position = PointF()
 
     var height: Int = 0
@@ -28,9 +30,11 @@ class MultiLineText(
 
     fun layoutText(width: Int) {
         lines.clear()
+        lineWidths.clear()
         var lastBreak = 0
         var rangeStart = 0
         var rangeEnd = 0
+        var maxWidth = 0
         while (rangeEnd < text.length) {
             if(text[rangeEnd].isWhitespace()) {
                 if(rangeStart == rangeEnd) {
@@ -39,14 +43,20 @@ class MultiLineText(
                 } else {
                     if(text[rangeEnd] == '\n') {
                         lines += text.substring(rangeStart, rangeEnd)
+                        lineWidths += paint.measureText(lines.last()).toInt()
+                        maxWidth = maxOf(maxWidth, lineWidths.last())
                         rangeStart = rangeEnd
-                    } else if (paint.measureText(text, rangeStart, rangeEnd) > width) {
-                        lines += text.substring(rangeStart, lastBreak)
-                        rangeStart = lastBreak
-                        rangeEnd = lastBreak
                     } else {
-                        lastBreak = rangeEnd
-                        rangeEnd++
+                        if (paint.measureText(text, rangeStart, rangeEnd) > width) {
+                            lines += text.substring(rangeStart, lastBreak)
+                            lineWidths += paint.measureText(lines.last()).toInt()
+                            maxWidth = maxOf(maxWidth, lineWidths.last())
+                            rangeStart = lastBreak
+                            rangeEnd = lastBreak
+                        } else {
+                            lastBreak = rangeEnd
+                            rangeEnd++
+                        }
                     }
                 }
             } else rangeEnd++
@@ -55,15 +65,21 @@ class MultiLineText(
         if(rangeStart != text.length) {
             if (paint.measureText(text, rangeStart, text.length) > width) {
                 lines += text.substring(rangeStart, lastBreak)
+                lineWidths += paint.measureText(lines.last()).toInt()
+                maxWidth = maxOf(maxWidth, lineWidths.last())
                 lines += text.substring(lastBreak + 1, text.length)
+                lineWidths += paint.measureText(lines.last()).toInt()
+                maxWidth = maxOf(maxWidth, lineWidths.last())
             } else {
                 lines += text.substring(rangeStart, text.length)
+                lineWidths += paint.measureText(lines.last()).toInt()
+                maxWidth = maxOf(maxWidth, lineWidths.last())
             }
         }
 
         paint.getFontMetrics(FontMetricsBuffer)
         this.height = FontMetricsBuffer.let { (it.bottom - it.top) * lines.size}.toInt()
-        this.width = width
+        this.width = maxWidth
     }
 
     fun onDraw(canvas: Canvas) {
@@ -78,12 +94,10 @@ class MultiLineText(
             when (align) {
                 Align.Left -> canvas.drawText(line, position.x, y, paint)
                 Align.Right -> {
-                    val lineWidth = paint.measureText(line)
-                    canvas.drawText(line, position.x + width - lineWidth, y, paint)
+                    canvas.drawText(line, position.x + width - lineWidths[i], y, paint)
                 }
                 Align.Center -> {
-                    val lineWidth = paint.measureText(line)
-                    canvas.drawText(line, position.x + width / 2 - lineWidth / 2, y, paint)
+                    canvas.drawText(line, position.x + width / 2 - lineWidths[i] / 2, y, paint)
                 }
             }
             y += textHeight

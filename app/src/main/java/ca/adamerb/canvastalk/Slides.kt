@@ -2,6 +2,7 @@ package ca.adamerb.canvastalk
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import java.lang.Math.*
 
 /*
@@ -96,7 +97,7 @@ class Slide0(private val view: SlideHolderView): Slide {
         circleRad = ceil(sqrt((width * width + height * height).toDouble())).toInt()
 
         credsText.layoutText(width - Padding * 2)
-        credsText.position.set(PaddingF, height - PaddingF - credsText.height)
+        credsText.position.set(width - PaddingF - credsText.width, height - PaddingF - credsText.height)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -131,8 +132,8 @@ class Slide1(private val view: SlideHolderView): Slide {
     private val paint =
         Paint().apply {
             isAntiAlias = true
-            style = Paint.Style.STROKE
             strokeWidth = StrokeWidth
+            style = Paint.Style.STROKE
             color = White
         }
 
@@ -176,7 +177,7 @@ class Slide1(private val view: SlideHolderView): Slide {
         title.position.set(PaddingF, PaddingF)
         title.layoutText(layoutWidth)
 
-        lineY = title.position.y + title.height + dp(1)
+        lineY = title.position.y + title.height
 
         bullets.position.set(PaddingF, title.position.y + title.height + dp(15))
         bullets.layout(layoutWidth)
@@ -207,6 +208,7 @@ class Slide2(private val view: SlideHolderView): Slide {
             color = White
             isAntiAlias = true
             strokeWidth = StrokeWidth
+            style = Paint.Style.STROKE
         }
 
     val title = MultiLineText(
@@ -219,11 +221,11 @@ class Slide2(private val view: SlideHolderView): Slide {
         }
     )
 
-
     private var lineStart: Float = 0f
     private var lineWidth: Float = 0f
     private var lineY: Float = 0f
     private var lineAnimation: Float = 0f
+    private val rects = List(4) { RectF() }
 
     init {
         runAnimation(duration = 1000) { t ->
@@ -237,33 +239,42 @@ class Slide2(private val view: SlideHolderView): Slide {
         lineStart = PaddingF
         lineWidth = width - PaddingF * 2
 
-        val layoutWidth = width - Padding * 2
         title.position.set(PaddingF, PaddingF)
-        title.layoutText(layoutWidth)
+        title.layoutText(lineWidth.toInt())
 
-        lineY = title.position.y + title.height + dp(1)
+        lineY = title.position.y + title.height
 
-        var y = lineY + dp(20)
-        items.forEachIndexed { _, value ->
-            value.layoutText(width)
-            value.position.set(0f, y)
-            y += value.height + dp(20)
+        var y = lineY + Padding
+        val boxHeight = (height - PaddingF - y - Spacing * 3) / 4
+        items.forEachIndexed { i, value ->
+            value.layoutText(width - Padding * 2)
+            val rectWidth = value.width + PaddingF * 2
+            val x = (width / 2 - rectWidth / 2)
+            rects[i].set(x, y, x + rectWidth, y + boxHeight)
+
+            value.position.set(width / 2f - value.width / 2f, rects[i].centerY() - value.height / 2)
+
+            y += boxHeight + Spacing
         }
     }
 
     override fun onDraw(canvas: Canvas) {
         RectBuffer.set(0, 0, view.width, view.height)
+
+        paint.style = Paint.Style.FILL
         paint.color = Shade3
         canvas.drawRect(RectBuffer, paint)
 
         canvas.saveLayer(0f, 0f, view.width.toFloat(), view.height.toFloat(), paint, Canvas.ALL_SAVE_FLAG)
 
+        paint.style = Paint.Style.STROKE
         paint.color = White
         canvas.drawLine(lineStart, lineY, lineStart + (lineWidth) * lineAnimation, lineY, paint)
 
         title.onDraw(canvas)
 
-        items.forEachIndexed { _, value ->
+        items.forEachIndexed { i, value ->
+            canvas.drawRoundRect(rects[i], CornerF, CornerF, paint)
             value.onDraw(canvas)
         }
 
