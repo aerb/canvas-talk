@@ -227,6 +227,14 @@ class Slide2(private val view: SlideHolderView): Slide {
     private var lineAnimation: Float = 0f
     private val rects = List(4) { RectF() }
 
+    private val arrowPaint =
+        Paint().apply {
+            color = White
+            isAntiAlias = true
+            alpha = 255 / 2
+        }
+    private val arrows = List(3) { Arrow(arrowPaint) }
+
     init {
         runAnimation(duration = 1000) { t ->
             lineAnimation = t
@@ -246,13 +254,20 @@ class Slide2(private val view: SlideHolderView): Slide {
 
         var y = lineY + Padding
         val boxHeight = (height - PaddingF - y - Spacing * 3) / 4
-        items.forEachIndexed { i, value ->
-            value.layoutText(width - Padding * 2)
-            val rectWidth = value.width + PaddingF * 2
+        items.forEachIndexed { i, text ->
+            text.layoutText(width - Padding * 2)
+            val rectWidth = text.width + PaddingF * 2
             val x = (width / 2 - rectWidth / 2)
             rects[i].set(x, y, x + rectWidth, y + boxHeight)
 
-            value.position.set(width / 2f - value.width / 2f, rects[i].centerY() - value.height / 2)
+            text.position.set(width / 2f - text.width / 2f, rects[i].centerY() - text.height / 2)
+
+            if(i > 0) {
+                val arrow = arrows[i - 1]
+                val top = items[i - 1].bottom
+                arrow.layout(dp(40), text.position.y - top)
+                arrow.position.set(width / 2 - arrow.width / 2, top)
+            }
 
             y += boxHeight + Spacing
         }
@@ -277,6 +292,8 @@ class Slide2(private val view: SlideHolderView): Slide {
             canvas.drawRoundRect(rects[i], CornerF, CornerF, paint)
             value.onDraw(canvas)
         }
+
+        arrows.forEach { it.onDraw(canvas) }
 
         canvas.restore()
     }
@@ -307,7 +324,6 @@ class Slide2(private val view: SlideHolderView): Slide {
         animateItem()
     }
 }
-
 
 
 class Slide3(private val view: SlideHolderView): Slide {

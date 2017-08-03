@@ -103,4 +103,6 @@ class MultiLineText(
             y += textHeight
         }
     }
+
+    val bottom: Float get() = position.y + height
 }

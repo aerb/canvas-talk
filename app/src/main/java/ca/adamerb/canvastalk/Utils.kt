@@ -19,6 +19,14 @@ fun mixColor(c0: Int, c1: Int, amount: Float): Int =
         (blue(c0) + (blue(c1) - blue(c0)) * amount).toInt()
     )
 
+inline fun <T> ArrayList<T>.forEach(function: (value: T) -> Unit) {
+    val size = this.size
+    var i = 0
+    while(i < size) {
+        function(this[i])
+        i++
+    }
+}
 
 inline fun <T> ArrayList<T>.forEachIndexed(function: (i: Int, value: T) -> Unit) {
     val size = this.size
