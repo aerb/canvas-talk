@@ -72,7 +72,7 @@ The Basics:
 interface Slide {
     fun onLayout(width: Int, height: Int)
     fun onDraw(canvas: Canvas)
-    fun onClick()
+    fun nextPressed()
 }
 
 class Slide0(private val view: SlideHolderView): Slide {
@@ -108,20 +108,20 @@ class Slide0(private val view: SlideHolderView): Slide {
         paint.getTextBounds(text, 0, text.length, RectBuffer)
         canvas.drawText(text, view.width / 2f - RectBuffer.width() / 2, view.height / 2f, paint)
 
-        credsText.onDraw(canvas)
+        credsText.draw(canvas)
 
         paint.color = Shade2
         canvas.drawCircle(view.width.toFloat(), view.height.toFloat(), circleRad * progress, paint)
     }
 
-    override fun onClick() {
+    override fun nextPressed() {
         runAnimation(
             onUpdate = { t ->
                 progress = t
                 view.invalidate()
             },
             onEnd = {
-                view.slide = Slide1(view)
+                view.slide = view.slides[++view.slideIndex]()
             }
         )
     }
@@ -129,25 +129,10 @@ class Slide0(private val view: SlideHolderView): Slide {
 
 class Slide1(private val view: SlideHolderView): Slide {
 
-    private val paint =
-        Paint().apply {
-            isAntiAlias = true
-            strokeWidth = StrokeWidth
-            style = Paint.Style.STROKE
-            color = White
-        }
-
-    val title = MultiLineText(
-        text = "Header",
-        paint = Paint().apply {
-            textSize = dp(25)
-            color = White
-            typeface = UbuntuBold
-            isAntiAlias = true
-        }
-    )
+    val header = Header(view, "Format")
 
     val bullets = Bullets(
+        view = view,
         bullets = listOf(
             "These slides are created using only the Android Canvas Api.",
             "One Activity, One Overriden view, Zero Fragments.",
@@ -156,52 +141,45 @@ class Slide1(private val view: SlideHolderView): Slide {
         )
     )
 
-    private var lineStart: Float = 0f
-    private var lineWidth: Float = 0f
-    private var lineY: Float = 0f
-    private var lineAnimation: Float = 0f
-
+    var alpha: Int = 255
     init {
         runAnimation(duration = 1000) { t ->
-            lineAnimation = t
-            paint.alpha = (t * 255).toInt()
+            header.lineAnimation = t
+            alpha = (t * 255).toInt()
             view.invalidate()
         }
     }
 
     override fun onLayout(width: Int, height: Int) {
-        lineStart = PaddingF
-        lineWidth = width - PaddingF * 2
+        header.layout(width)
 
-        val layoutWidth = width - Padding * 2
-        title.position.set(PaddingF, PaddingF)
-        title.layoutText(layoutWidth)
-
-        lineY = title.position.y + title.height
-
-        bullets.position.set(PaddingF, title.position.y + title.height + dp(15))
-        bullets.layout(layoutWidth)
+        bullets.position.set(PaddingF, header.lineY + PaddingF)
+        bullets.layout(width - Padding * 2)
     }
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawColor(Shade2)
 
-        val count = canvas.saveLayer(0f, 0f, view.width.toFloat(), view.height.toFloat(), paint, Canvas.ALL_SAVE_FLAG)
+        canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
 
-        canvas.drawLine(lineStart, lineY, lineStart + (lineWidth) * lineAnimation, lineY, paint)
+        header.draw(canvas)
+        bullets.draw(canvas)
 
-        title.onDraw(canvas)
-        bullets.onDraw(canvas)
-
-        canvas.restoreToCount(count)
+        canvas.restore()
     }
 
-    override fun onClick() {
-        view.slideIn(Slide2(view))
+    override fun nextPressed() {
+        if(!bullets.showNext()) {
+            view.slideIn(view.slideIndex + 1, SlideFrom.Right)
+        }
     }
 }
 
 class Slide2(private val view: SlideHolderView): Slide {
+
+    private val header = Header(view, "What? The Android Graphics Api")
+
+    private val rects = List(4) { RectF() }
 
     private val paint =
         Paint().apply {
@@ -211,48 +189,27 @@ class Slide2(private val view: SlideHolderView): Slide {
             style = Paint.Style.STROKE
         }
 
-    val title = MultiLineText(
-        text = "What? The Android Graphics Api",
-        paint = Paint().apply {
-            textSize = dp(25)
-            color = White
-            typeface = UbuntuBold
-            isAntiAlias = true
-        }
-    )
-
-    private var lineStart: Float = 0f
-    private var lineWidth: Float = 0f
-    private var lineY: Float = 0f
-    private var lineAnimation: Float = 0f
-    private val rects = List(4) { RectF() }
-
     private val arrowPaint =
         Paint().apply {
             color = White
             isAntiAlias = true
-            alpha = 255 / 2
+            alpha = 255 * 3 / 4
         }
     private val arrows = List(3) { Arrow(arrowPaint) }
 
+    var alpha: Int = 255
     init {
         runAnimation(duration = 1000) { t ->
-            lineAnimation = t
-            paint.alpha = (t * 255).toInt()
+            header.lineAnimation = t
+            alpha = (t * 255).toInt()
             view.invalidate()
         }
     }
 
     override fun onLayout(width: Int, height: Int) {
-        lineStart = PaddingF
-        lineWidth = width - PaddingF * 2
+        header.layout(width)
 
-        title.position.set(PaddingF, PaddingF)
-        title.layoutText(lineWidth.toInt())
-
-        lineY = title.position.y + title.height
-
-        var y = lineY + Padding
+        var y = header.lineY + dp(10)
         val boxHeight = (height - PaddingF - y - Spacing * 3) / 4
         items.forEachIndexed { i, text ->
             text.layoutText(width - Padding * 2)
@@ -263,9 +220,10 @@ class Slide2(private val view: SlideHolderView): Slide {
             text.position.set(width / 2f - text.width / 2f, rects[i].centerY() - text.height / 2)
 
             if(i > 0) {
+                val top = items[i - 1].bottom + dp(5)
+                val arrowHeight = text.position.y - dp(5) - top
                 val arrow = arrows[i - 1]
-                val top = items[i - 1].bottom
-                arrow.layout(dp(40), text.position.y - top)
+                arrow.layout(arrowHeight * 0.75f, arrowHeight)
                 arrow.position.set(width / 2 - arrow.width / 2, top)
             }
 
@@ -280,17 +238,16 @@ class Slide2(private val view: SlideHolderView): Slide {
         paint.color = Shade3
         canvas.drawRect(RectBuffer, paint)
 
-        canvas.saveLayer(0f, 0f, view.width.toFloat(), view.height.toFloat(), paint, Canvas.ALL_SAVE_FLAG)
+        canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
+
+        header.draw(canvas)
 
         paint.style = Paint.Style.STROKE
         paint.color = White
-        canvas.drawLine(lineStart, lineY, lineStart + (lineWidth) * lineAnimation, lineY, paint)
-
-        title.onDraw(canvas)
 
         items.forEachIndexed { i, value ->
             canvas.drawRoundRect(rects[i], CornerF, CornerF, paint)
-            value.onDraw(canvas)
+            value.draw(canvas)
         }
 
         arrows.forEach { it.onDraw(canvas) }
@@ -308,8 +265,11 @@ class Slide2(private val view: SlideHolderView): Slide {
         }
     }
 
-    override fun onClick() {
-        if(items.size > 3) return
+    override fun nextPressed() {
+        if(items.size > 3) {
+            view.slideIn(view.slideIndex + 1, SlideFrom.Left)
+            return
+        }
 
         items += MultiLineText(
             text = when(items.size) {
@@ -336,29 +296,134 @@ class Slide3(private val view: SlideHolderView): Slide {
             isAntiAlias = true
         }
 
+    val header = Header(view, "The Basics")
+    val bullets = Bullets(
+        view = view,
+        paint = Paint().apply {
+            textSize = dp(14)
+            color = White
+            typeface = UbuntuBold
+            isAntiAlias = true
+        },
+        bullets = listOf(
+            "A Canvas object is most often attained by overriding the onDraw function of a view.",
+            "Canvas object has series of draw*() methods for drawing primitive shapes. drawLine, drawCircle, drawRoundedRect",
+            "All draw*() methods take arguments that describe draw coordinates, and an instance of a paint object.",
+            "Paint describes color, path effect, color-filters."
+        )
+    ).also {
+        it.showNextCallback = { index ->
+            when(index) {
+                0 -> {
+                    codeSnippet = CodeSnippet("""
+                        public class CustomView extends View {
+                            public CustomView(Context context) {
+                                super(context);
+                            }
 
-    private val multiLineText = MultiLineText(text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut a feugiat felis. Integer ac aliquet elit. Vestibulum quis erat fringilla, varius ex eu, cursus erat. Morbi lobortis luctus justo nec euismod. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras ullamcorper sapien consectetur libero aliquam, finibus viverra velit finibus. Curabitur venenatis rhoncus massa, quis lobortis nisl placerat vitae. Duis id lacus lacus. In ut sapien et felis auctor condimentum nec at orci. Sed turpis enim, fermentum id lacus ac, commodo blandit eros. Pellentesque et tellus felis. Nam convallis, magna in convallis fringilla, lorem est porta neque, aliquam pharetra sapien ipsum a sem.")
+                            @Override
+                            protected void onDraw(Canvas canvas) {
+
+                            }
+                        }"""
+                    )
+                    runAnimation { t ->
+                        codeBackground.bottom = view.height * t
+                        view.invalidate()
+                    }
+                }
+                1 -> {
+                    codeSnippet?.recycle()
+                    codeSnippet = CodeSnippet("""
+                        public class CustomView extends View {
+                            public CustomView(Context context) {
+                                super(context);
+                            }
+
+                            @Override
+                            protected void onDraw(Canvas canvas) {
+                                canvas.drawLine(0, 0, w, h, paint);
+                                canvas.drawRect(0, 0, w, h, paint);
+                                canvas.drawCircle(0, 0, r, paint);
+                            }
+                        }"""
+                    )
+                }
+                2 -> {
+                    codeSnippet?.recycle()
+                    codeSnippet = CodeSnippet("""
+                        public class CustomView extends View {
+                            Paint paint;
+                            public CustomView(Context context) {
+                                super(context);
+                                paint = new Paint();
+                                paint.setColor(Color.RED);
+                                paint.setStyle(Paint.Style.STROKE);
+                            }
+
+                            @Override
+                            protected void onDraw(Canvas canvas) {
+                                canvas.drawRect(0, 0, w, h, paint);
+                                canvas.drawCircle(0, 0, r, paint);
+                                canvas.drawLine(0, 0, w, h, paint);
+                            }
+                        }"""
+                    )
+                }
+            }
+            onLayout(view.width, view.height)
+            view.invalidate()
+        }
+    }
+
+    var codeSnippet: CodeSnippet? = null
+    val codeBackground = RectF()
+
+    var alpha: Int = 255
+    init {
+        runAnimation(duration = 1000) { t ->
+            header.lineAnimation = t
+            alpha = (t * 255).toInt()
+            view.invalidate()
+        }
+    }
 
     override fun onLayout(width: Int, height: Int) {
-        multiLineText.position.set(dp(10), dp(20))
-        multiLineText.layoutText(width / 2)
+        header.layout(width)
+        bullets.position.set(PaddingF, header.lineY + PaddingF)
+        bullets.layout(width / 2 - Padding - dp(5).toInt())
+
+        codeSnippet?.let {
+            it.layout(width)
+            it.scale = (width / 2 - PaddingF- dp(5)) / it.width
+            it.position.x = width - PaddingF - it.scaledWidth
+            it.position.y = header.lineY + PaddingF
+        }
+        codeBackground.set(width / 2f, 0f, width.toFloat(), codeBackground.bottom)
     }
 
     override fun onDraw(canvas: Canvas) {
         RectBuffer.set(0, 0, view.width, view.height)
-        paint.color = Shade3
+        paint.color = Shade4
         canvas.drawRect(RectBuffer, paint)
 
-        paint.color = White
-        val text = "Adam Erb"
-        paint.getTextBounds(text, 0, text.length, RectBuffer)
-        canvas.drawText(text, 0f, RectBuffer.height().toFloat(), paint)
+        canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
+        if(codeBackground.height() > 0) {
+            paint.color = CodeBackground
+            canvas.drawRect(codeBackground, paint)
+        }
 
-        multiLineText.onDraw(canvas)
+        header.draw(canvas)
+        bullets.draw(canvas)
+
+        codeSnippet?.draw(canvas)
+        canvas.restore()
     }
 
-    override fun onClick() {
-        view.slide = Slide0(view)
+    override fun nextPressed() {
+        if(!bullets.showNext()) {
+            view.slideIn(view.slideIndex + 1, SlideFrom.Top)
+        }
     }
 }
 

@@ -28,6 +28,8 @@ class MultiLineText(
     var width: Int = 0
         private set
 
+    var trimLeading = true
+
     fun layoutText(width: Int) {
         lines.clear()
         lineWidths.clear()
@@ -38,7 +40,7 @@ class MultiLineText(
         while (rangeEnd < text.length) {
             if(text[rangeEnd].isWhitespace()) {
                 if(rangeStart == rangeEnd) {
-                    rangeStart++
+                    if(trimLeading) rangeStart++
                     rangeEnd++
                 } else {
                     if(text[rangeEnd] == '\n') {
@@ -82,7 +84,7 @@ class MultiLineText(
         this.width = maxWidth
     }
 
-    fun onDraw(canvas: Canvas) {
+    fun draw(canvas: Canvas) {
         paint.getFontMetrics(FontMetricsBuffer)
         val top = FontMetricsBuffer.top * -1
         val ascent = FontMetricsBuffer.ascent * -1

@@ -8,8 +8,10 @@ const val Shade0 = 0xff2F4172.toInt()
 const val Shade1 = 0xff7986AC.toInt()
 const val Shade2 = 0xff4F608F.toInt()
 const val Shade3 = 0xff162756.toInt()
+const val Shade4 = 0xff061439.toInt()
 
 const val White = 0xffffffff.toInt()
+const val CodeBackground = 0x88000000.toInt()
 
 
 val UbuntuBold =
@@ -17,6 +19,13 @@ val UbuntuBold =
         AppContext.resources.assets,
         "Ubuntu-Bold.ttf"
     )!!
+
+val SourceCodePro by lazy(LazyThreadSafetyMode.NONE) {
+    Typeface.createFromAsset(
+        AppContext.resources.assets,
+        "SourceCodePro-Regular.ttf"
+    )!!
+}
 
 val PaddingF = dp(20)
 val Padding = PaddingF.toInt()

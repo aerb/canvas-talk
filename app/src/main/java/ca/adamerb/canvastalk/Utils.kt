@@ -4,7 +4,6 @@ package ca.adamerb.canvastalk
 
 import android.animation.Animator
 import android.animation.ValueAnimator
-import android.graphics.Color
 import android.graphics.Color.*
 import android.util.Log
 
@@ -37,29 +36,34 @@ inline fun <T> ArrayList<T>.forEachIndexed(function: (i: Int, value: T) -> Unit)
     }
 }
 
+var runningAnimations = 0
+    private set
 fun runAnimation(
     duration: Long = 500,
     onEnd: (ValueAnimator) -> Unit = {},
     onUpdate: (Float) -> Unit = {}
 ) {
-    ValueAnimator.ofFloat(0f, 1f).apply {
+    runningAnimations++
+    ValueAnimator.ofFloat(0f, 1f).also {
         val callbacks = object : ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener {
             override fun onAnimationEnd(animation: Animator) {
                 onEnd(animation as ValueAnimator)
+                runningAnimations--
             }
 
             override fun onAnimationUpdate(animation: ValueAnimator) {
-                onUpdate.invoke(animatedFraction)
+                onUpdate.invoke(animation.animatedFraction)
             }
 
             override fun onAnimationCancel(animation: Animator?) {}
             override fun onAnimationStart(animation: Animator?) {}
             override fun onAnimationRepeat(animation: Animator?) {}
         }
-        addUpdateListener(callbacks)
-        addListener(callbacks)
-        this.duration = duration
-    }.start()
+        it.addUpdateListener(callbacks)
+        it.addListener(callbacks)
+        it.duration = duration
+        it.start()
+    }
 }
 
 fun logd(any: Any?) {

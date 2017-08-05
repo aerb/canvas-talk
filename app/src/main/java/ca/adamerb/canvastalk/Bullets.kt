@@ -5,14 +5,16 @@ import android.graphics.Paint
 import android.graphics.PointF
 
 class Bullets(
-    private val paint: Paint =
+    val view: SlideHolderView,
+    val paint: Paint =
         Paint().apply {
             textSize = dp(18)
             color = White
             typeface = UbuntuBold
             isAntiAlias = true
         },
-    bullets: List<String>
+    bullets: List<String>,
+    var showNextCallback: (index: Int) -> Unit = {}
 ) {
 
     private val texts = bullets.map { MultiLineText(it, paint) }
@@ -43,7 +45,7 @@ class Bullets(
         this.width = width
     }
 
-    fun onDraw(canvas: Canvas) {
+    fun draw(canvas: Canvas) {
         paint.getFontMetrics(FontMetricsBuffer)
         val bY = FontMetricsBuffer.let { it.bottom - it.top } / 2
         val bX = bulletInset / 2
@@ -51,16 +53,33 @@ class Bullets(
         canvas.save()
         canvas.translate(position.x, position.y)
 
-//        paint.color = Shade0
-//        RectBuffer.set(0, 0, width, height)
-//        canvas.drawRect(RectBuffer, paint)
-//        paint.color = White
-
-        for(i in 0..texts.size - 1) {
+        for(i in 0..showUpToIndex) {
             val it = texts[i]
-            canvas.drawCircle(bX.toFloat(), it.position.y + bY, bulletRad, paint)
-            it.onDraw(canvas)
+            if(i < showUpToIndex) {
+                canvas.drawCircle(bX.toFloat(), it.position.y + bY, bulletRad, paint)
+                it.draw(canvas)
+            } else {
+                val oldAlpha = paint.alpha
+                paint.alpha = alpha
+                canvas.drawCircle(bX.toFloat(), it.position.y + bY, bulletRad, paint)
+                it.draw(canvas)
+                paint.alpha = oldAlpha
+            }
         }
         canvas.restore()
+    }
+
+    var showUpToIndex: Int = -1
+    var alpha: Int = 255
+    fun showNext(): Boolean {
+        return if(showUpToIndex < texts.size - 1) {
+            showUpToIndex ++
+            showNextCallback(showUpToIndex)
+            runAnimation { t ->
+                alpha = (t * 255).toInt()
+                view.invalidate()
+            }
+            true
+        } else false
     }
 }
