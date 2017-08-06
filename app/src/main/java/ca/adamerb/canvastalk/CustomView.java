@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.view.View;
 
 public class CustomView extends View {
@@ -15,10 +16,11 @@ public class CustomView extends View {
         paint.setStyle(Paint.Style.STROKE);
     }
 
+    // Dont allocate in onDraw
     @Override
     protected void onDraw(Canvas canvas) {
-//        canvas.drawRect(0, 0, w, h, paint);
-//        canvas.drawCircle(0, 0, r, paint);
-//        canvas.drawLine(0, 0, w, h, paint);
+//        Path p = new Path();
+//        p.moveTo(width/2, height/2);
+
     }
 }

@@ -5,7 +5,9 @@ package ca.adamerb.canvastalk
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.graphics.Color.*
+import android.graphics.PointF
 import android.util.Log
+import android.view.View
 
 val PixelScale = AppContext.resources.displayMetrics.xdpi / 144f
 inline fun dp(pixels: Int): Float = pixels * PixelScale
@@ -36,10 +38,37 @@ inline fun <T> ArrayList<T>.forEachIndexed(function: (i: Int, value: T) -> Unit)
     }
 }
 
+class ActionSequence(vararg actions: (ActionSequence) -> Unit) {
+    var index = -1
+    val actions = actions.toMutableList()
+
+    fun executeNext(): Boolean {
+        return if(index < actions.size - 1) {
+            index++
+            actions[index](this)
+            true
+        }  else false
+    }
+}
+
+class Interpolation(val from: PointF, val to: PointF) {
+    private val tmp = PointF()
+    private val diffX = to.x - from.x
+    private val diffY = to.y - from.y
+    operator fun get(t: Float): PointF {
+        tmp.set(
+            from.x + diffX * t,
+            from.y + diffY * t
+        )
+        return tmp
+    }
+}
+
 var runningAnimations = 0
     private set
 fun runAnimation(
     duration: Long = 500,
+    invalidate: View? = null,
     onEnd: (ValueAnimator) -> Unit = {},
     onUpdate: (Float) -> Unit = {}
 ) {
@@ -49,10 +78,12 @@ fun runAnimation(
             override fun onAnimationEnd(animation: Animator) {
                 onEnd(animation as ValueAnimator)
                 runningAnimations--
+                invalidate?.invalidate()
             }
 
             override fun onAnimationUpdate(animation: ValueAnimator) {
                 onUpdate.invoke(animation.animatedFraction)
+                invalidate?.invalidate()
             }
 
             override fun onAnimationCancel(animation: Animator?) {}

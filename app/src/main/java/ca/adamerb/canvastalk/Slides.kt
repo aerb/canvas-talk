@@ -1,8 +1,6 @@
 package ca.adamerb.canvastalk
 
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import java.lang.Math.*
 
 /*
@@ -46,10 +44,14 @@ The Basics:
     - drawLine, drawCircle, drawRoundedRect
 - All draw*() methods take arguments that describe draw coordinates, and an instance of a paint
  object.
+
+
+---
+
+Working with Paths
+
 - Paint describes color, path effect, color-filters.
     - For more complex shapes you can use drawPath, drawText, drawBitmap
-
-
 
 
 
@@ -250,7 +252,7 @@ class Slide2(private val view: SlideHolderView): Slide {
             value.draw(canvas)
         }
 
-        arrows.forEach { it.onDraw(canvas) }
+        arrows.forEach { it.draw(canvas) }
 
         canvas.restore()
     }
@@ -300,15 +302,15 @@ class Slide3(private val view: SlideHolderView): Slide {
     val bullets = Bullets(
         view = view,
         paint = Paint().apply {
-            textSize = dp(14)
+            textSize = dp(13)
             color = White
             typeface = UbuntuBold
             isAntiAlias = true
         },
         bullets = listOf(
-            "A Canvas object is most often attained by overriding the onDraw function of a view.",
-            "Canvas object has series of draw*() methods for drawing primitive shapes. drawLine, drawCircle, drawRoundedRect",
-            "All draw*() methods take arguments that describe draw coordinates, and an instance of a paint object.",
+            "A canvas instance can be attained by subclassing View and overriding onDraw()",
+            "Canvas has a large amount of draw*() methods. Eg. drawRect, drawCircle, drawLine",
+            "All of the draw*() methods take positional arguments, and an instance of paint.",
             "Paint describes color, path effect, color-filters."
         )
     ).also {
@@ -317,14 +319,14 @@ class Slide3(private val view: SlideHolderView): Slide {
                 0 -> {
                     codeSnippet = CodeSnippet("""
                         public class CustomView extends View {
-                            public CustomView(Context context) {
-                                super(context);
-                            }
+                          public CustomView(Context context) {
+                            super(context);
+                          }
 
-                            @Override
-                            protected void onDraw(Canvas canvas) {
+                          @Override
+                          protected void onDraw(Canvas canvas) {
 
-                            }
+                          }
                         }"""
                     )
                     runAnimation { t ->
@@ -336,16 +338,16 @@ class Slide3(private val view: SlideHolderView): Slide {
                     codeSnippet?.recycle()
                     codeSnippet = CodeSnippet("""
                         public class CustomView extends View {
-                            public CustomView(Context context) {
-                                super(context);
-                            }
+                          public CustomView(Context context) {
+                            super(context);
+                          }
 
-                            @Override
-                            protected void onDraw(Canvas canvas) {
-                                canvas.drawLine(0, 0, w, h, paint);
-                                canvas.drawRect(0, 0, w, h, paint);
-                                canvas.drawCircle(0, 0, r, paint);
-                            }
+                          @Override
+                          protected void onDraw(Canvas canvas) {
+                            canvas.drawLine(0, 0, w, h, paint);
+                            canvas.drawRect(0, 0, w, h, paint);
+                            canvas.drawCircle(0, 0, r, paint);
+                          }
                         }"""
                     )
                 }
@@ -353,20 +355,20 @@ class Slide3(private val view: SlideHolderView): Slide {
                     codeSnippet?.recycle()
                     codeSnippet = CodeSnippet("""
                         public class CustomView extends View {
-                            Paint paint;
-                            public CustomView(Context context) {
-                                super(context);
-                                paint = new Paint();
-                                paint.setColor(Color.RED);
-                                paint.setStyle(Paint.Style.STROKE);
-                            }
+                          Paint paint;
+                          public CustomView(Context context) {
+                            super(context);
+                            paint = new Paint();
+                            paint.setColor(Color.RED);
+                            paint.setStyle(Paint.Style.STROKE);
+                          }
 
-                            @Override
-                            protected void onDraw(Canvas canvas) {
-                                canvas.drawRect(0, 0, w, h, paint);
-                                canvas.drawCircle(0, 0, r, paint);
-                                canvas.drawLine(0, 0, w, h, paint);
-                            }
+                          @Override
+                          protected void onDraw(Canvas canvas) {
+                            canvas.drawRect(0, 0, w, h, paint);
+                            canvas.drawCircle(0, 0, r, paint);
+                            canvas.drawLine(0, 0, w, h, paint);
+                          }
                         }"""
                     )
                 }
@@ -391,11 +393,11 @@ class Slide3(private val view: SlideHolderView): Slide {
     override fun onLayout(width: Int, height: Int) {
         header.layout(width)
         bullets.position.set(PaddingF, header.lineY + PaddingF)
-        bullets.layout(width / 2 - Padding - dp(5).toInt())
+        bullets.layout(width / 2 - Padding * 2)
 
         codeSnippet?.let {
             it.layout(width)
-            it.scale = (width / 2 - PaddingF- dp(5)) / it.width
+            it.scale = (width / 2 - PaddingF * 2) / it.width
             it.position.x = width - PaddingF - it.scaledWidth
             it.position.y = header.lineY + PaddingF
         }
@@ -417,12 +419,366 @@ class Slide3(private val view: SlideHolderView): Slide {
         bullets.draw(canvas)
 
         codeSnippet?.draw(canvas)
+
+        drawOps.forEach { it(canvas) }
+        canvas.restore()
+    }
+
+    private val examplePaint =
+        Paint().apply {
+            color = White
+            strokeWidth = StrokeWidth
+            style = Paint.Style.STROKE
+            isAntiAlias = true
+        }
+
+    val drawOps = ArrayList<(Canvas) -> Unit>()
+    fun showDemonstrations(): Boolean {
+        codeSnippet = null
+
+        val w = view.width
+
+        val circleRad = dp(30)
+        val squareEdge = circleRad * 2
+        val space = dp(10)
+
+        val x = w * 3f / 4f
+
+        val rectY = header.lineY + (view.height - header.lineY) / 2 - (squareEdge * 3 + space * 2) / 2
+
+        val rect = RectF(0f, 0f, squareEdge, squareEdge)
+        rect.offsetTo(x - rect.width() / 2, rectY)
+
+        val circle = PointF(x, rect.bottom + space + circleRad)
+
+        val lineStart = circle.y + circleRad + space
+        val line = listOf(
+            PointF(x - circleRad, lineStart),
+            PointF(x + circleRad, lineStart + circleRad * 2)
+        )
+
+        when(drawOps.size) {
+            0 -> drawOps += { it.drawRect(rect, examplePaint) }
+            1 -> drawOps += { it.drawCircle(circle.x, circle.y, circleRad, examplePaint) }
+            2 -> drawOps += { it.drawLine(line[0].x, line[0].y, line[1].x, line[1].y, examplePaint) }
+            else -> return false
+        }
+
+        view.invalidate()
+        return true
+    }
+
+    override fun nextPressed() {
+        if(!bullets.showNext() && !showDemonstrations()) {
+            view.slideIn(view.slideIndex + 1, SlideFrom.Top)
+        }
+    }
+}
+
+
+class Slide4(private val view: SlideHolderView): Slide {
+
+    private val paint =
+        Paint().apply {
+            textSize = dp(20)
+            color = White
+            typeface = UbuntuBold
+            isAntiAlias = true
+        }
+
+    var header: Header? = Header(view, "More Useful Methods")
+    var bullets: Bullets? = Bullets(
+        view = view,
+        paint = Paint().apply {
+            textSize = dp(13)
+            color = White
+            typeface = UbuntuBold
+            isAntiAlias = true
+        },
+        bullets = listOf(
+            "More complex geometry can be drawn using Path, and drawPath()",
+            "The drawArc() method is great for pie charts.",
+            "The drawRoundedRect() method is useful for buttons.",
+            "Draw text with drawText()."
+        )
+    )
+
+
+    var codeSnippet: CodeSnippet? = null
+    var codeBackground: RectF? = null
+    val contentCenter = PointF()
+
+    var alpha: Int = 255
+    init {
+        runAnimation(duration = 1000) { t ->
+            header?.lineAnimation = t
+            alpha = (t * 255).toInt()
+            view.invalidate()
+        }
+    }
+
+    override fun onLayout(width: Int, height: Int) {
+        header?.let { header ->
+            header.layout(width)
+            contentCenter.set(width * 3f / 4f, header.lineY + (view.height - header.lineY) / 2)
+
+            bullets?.let { bullets ->
+                bullets.position.set(PaddingF, header.lineY + PaddingF)
+                bullets.layout(width / 2 - Padding * 2)
+            }
+
+            codeSnippet?.let {
+                it.layout(width)
+                it.scale = minOf(
+                    (width / 2 - PaddingF * 2) / it.width,
+                    (height - header.lineY - Padding * 2) / it.height
+                )
+
+                it.position.x = width / 2 + PaddingF
+                it.position.y = header.lineY + PaddingF
+            }
+        }
+
+        codeBackground?.set(width / 2f, 0f, width.toFloat(), height.toFloat())
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        RectBuffer.set(0, 0, view.width, view.height)
+        paint.color = Shade4
+        canvas.drawRect(RectBuffer, paint)
+
+        canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
+        codeBackground?.let {
+            paint.color = CodeBackground
+            canvas.drawRect(it, paint)
+        }
+
+        header?.draw(canvas)
+        bullets?.draw(canvas)
+
+        codeSnippet?.draw(canvas)
+        exampleDrawOperation?.invoke(canvas)
+
+        canvas.restore()
+    }
+
+    private var exampleDrawOperation: ((Canvas) -> Unit)? = null
+
+    private val examplePaint =
+        Paint().apply {
+            color = White
+            strokeWidth = StrokeWidth
+            style = Paint.Style.STROKE
+            isAntiAlias = true
+        }
+
+
+    val actionSequence = ActionSequence(
+        { bullets?.showNext() },
+        {
+            codeSnippet =
+                CodeSnippet("""
+                    fun layout(width: Float, height: Float) {
+                      val bodyWidth = width * bodyWidthRatio
+                      val headHeight = height * headHeightRatio
+                      var x: Float = width / 2 - bodyWidth / 2
+                      var y: Float = 0f
+                      path.reset()
+                      path.moveTo(x, y)
+                      y = height - headHeight
+                      path.lineTo(x, y)
+                      x = 0f
+                      path.lineTo(x, y)
+                      x = width / 2f
+                      y = height
+                      path.lineTo(x, y)
+                      x = width
+                      y = height - headHeight
+                      path.lineTo(x, y)
+                      x = width / 2 + bodyWidth / 2
+                      path.lineTo(x, y)
+                      y = 0f
+                      path.lineTo(x, y)
+                      path.close()
+
+                      this.width = width
+                      this.height = height
+                    }"""
+                )
+            val codeBackground = RectF()
+            this.codeBackground = codeBackground
+            onLayout(view.width, view.height)
+            runAnimation(invalidate = view) { t ->
+                codeBackground.bottom = view.height * t
+            }
+        },
+        {
+            codeSnippet = null
+            val arrow = Arrow(examplePaint)
+            arrow.layout(dp(50), dp(50))
+            arrow.position.set(contentCenter.x - arrow.width / 2, contentCenter.y - arrow.height / 2)
+            exampleDrawOperation = { arrow.draw(it) }
+            view.invalidate()
+        },
+        {
+            exampleDrawOperation = null
+            bullets?.showNext()
+        },
+        {
+            codeSnippet =
+                CodeSnippet("""
+                    var angle = 0f
+                    val rad = dp(30)
+                    val bounds = RectF(
+                        contentCenter.x - rad, contentCenter.y - rad,
+                        contentCenter.x + rad, contentCenter.y + rad
+                    )
+                    canvas.drawArc(bounds, 0f, angle, true, examplePaint)"""
+                )
+            onLayout(view.width, view.height)
+            view.invalidate()
+        },
+        {
+            codeSnippet = null
+            var angle = 0f
+            val rad = dp(30)
+            val bounds = RectF(
+                contentCenter.x - rad, contentCenter.y - rad,
+                contentCenter.x + rad, contentCenter.y + rad
+            )
+
+            runAnimation(duration = 1000, invalidate = view) { angle = 360 * it }
+            exampleDrawOperation = { canvas ->
+                canvas.drawArc(bounds, 0f, angle, true, examplePaint)
+            }
+        },
+        {
+            exampleDrawOperation = null
+            bullets?.showNext()
+        },
+        {
+            codeSnippet = CodeSnippet("canvas.drawRoundRect(bounds, dp(5), dp(5), paint)")
+            onLayout(view.width, view.height)
+            view.invalidate()
+        },
+        {
+            codeSnippet = null
+
+            val textPaint =
+                Paint().apply {
+                    textSize = dp(12)
+                    color = White
+                    typeface = UbuntuBold
+                    isAntiAlias = true
+                }
+
+            val bounds = RectF()
+            val textPosition = PointF()
+            val text = "Click Me"
+            textPaint.getTextBounds(text, 0, text.length, RectBuffer)
+            textPosition.x = contentCenter.x - RectBuffer.width() / 2
+            textPosition.y = contentCenter.y + RectBuffer.height() / 2
+
+            bounds.set(0f, 0f, RectBuffer.width() + PaddingF * 2, RectBuffer.height() + PaddingF)
+            bounds.offsetTo(
+                contentCenter.x - bounds.width() / 2,
+                contentCenter.y - bounds.height() / 2
+            )
+
+            exampleDrawOperation = { canvas ->
+                canvas.drawRoundRect(bounds, dp(5), dp(5), examplePaint)
+                canvas.drawText(text, textPosition.x, textPosition.y, textPaint)
+            }
+            view.invalidate()
+        },
+        {
+            exampleDrawOperation = null
+            bullets?.showNext()
+        },
+        {
+            val header = Header(view, "Draw Text!")
+            header.layout(view.width)
+            header.title.let {
+                it.position.x = contentCenter.x - it.width / 2
+                it.position.y = contentCenter.y - it.height / 2
+            }
+            exampleDrawOperation = {
+                header.draw(it)
+            }
+            view.invalidate()
+        },
+        {
+            val header = Header(view, "Draw Text!")
+            header.layout(view.width)
+
+            val position = Interpolation(
+                PointF(
+                    contentCenter.x - header.title.width / 2,
+                    contentCenter.y - header.title.height / 2
+                ),
+                PointF(PaddingF, PaddingF)
+            )
+
+            this.header = null
+            this.bullets = null
+
+            exampleDrawOperation = {
+                header.draw(it)
+            }
+            runAnimation(duration = 1000, invalidate = view) { time ->
+                header.title.position.set(position[time])
+                header.lineAnimation = time
+                codeBackground?.left = (view.width / 2) * (1f - time)
+            }
+        },
+        {
+            view.slide = view.slides[++view.slideIndex]()
+        }
+    )
+
+    override fun nextPressed() {
+        actionSequence.executeNext()
+    }
+}
+
+
+class Slide5(private val view: SlideHolderView): Slide {
+
+    val header = Header(view, "Draw Text!").also { it.lineAnimation = 1f }
+
+    val bullets = Bullets(
+        view = view,
+        bullets = listOf(
+            "These slides are created using only the Android Canvas Api.",
+            "One Activity, One Overriden view, Zero Fragments.",
+            "No libraries with the exception of the Kotlin StdLib.",
+            "Download the app @ _________"
+        )
+    )
+
+    var alpha: Int = 255
+
+    override fun onLayout(width: Int, height: Int) {
+        header.layout(width)
+
+        bullets.position.set(PaddingF, header.lineY + PaddingF)
+        bullets.layout(width - Padding * 2)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        canvas.drawColor(Shade5)
+
+        canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
+
+        header.draw(canvas)
+        bullets.draw(canvas)
+
         canvas.restore()
     }
 
     override fun nextPressed() {
         if(!bullets.showNext()) {
-            view.slideIn(view.slideIndex + 1, SlideFrom.Top)
+            view.slideIn(view.slideIndex + 1, SlideFrom.Right)
         }
     }
 }

@@ -18,7 +18,9 @@ class SlideHolderView(c: Context): View(c) {
             { Slide0(this) },
             { Slide1(this) },
             { Slide2(this) },
-            { Slide3(this) }
+            { Slide3(this) },
+            { Slide4(this) },
+            { Slide5(this) }
         )
 
     var slideIndex = 0
@@ -110,11 +112,6 @@ class SlideHolderView(c: Context): View(c) {
 }
 
 class MainActivity : AppCompatActivity() {
-
-    init {
-        logd("New instance $this")
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(SlideHolderView(this))

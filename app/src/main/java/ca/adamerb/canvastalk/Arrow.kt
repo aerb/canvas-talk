@@ -15,34 +15,31 @@ class Arrow(private val paint: Paint) {
     fun layout(width: Float, height: Float) {
         val bodyWidth = width * bodyWidthRatio
         val headHeight = height * headHeightRatio
-        var x: Float
-        var y: Float
-        path.apply {
-            reset()
-            x = width / 2 - bodyWidth / 2
-            y = 0f
-            moveTo(x, y)
-            y = height - headHeight
-            lineTo(x, y)
-            x = 0f
-            lineTo(x, y)
-            x = width / 2f
-            y = height
-            lineTo(x, y)
-            x = width
-            y = height - headHeight
-            lineTo(x, y)
-            x = width / 2 + bodyWidth / 2
-            lineTo(x, y)
-            y = 0f
-            lineTo(x, y)
-            close()
-        }
+        var x: Float = width / 2 - bodyWidth / 2
+        var y: Float = 0f
+        path.reset()
+        path.moveTo(x, y)
+        y = height - headHeight
+        path.lineTo(x, y)
+        x = 0f
+        path.lineTo(x, y)
+        x = width / 2f
+        y = height
+        path.lineTo(x, y)
+        x = width
+        y = height - headHeight
+        path.lineTo(x, y)
+        x = width / 2 + bodyWidth / 2
+        path.lineTo(x, y)
+        y = 0f
+        path.lineTo(x, y)
+        path.close()
+
         this.width = width
         this.height = height
     }
 
-    fun onDraw(canvas: Canvas) {
+    fun draw(canvas: Canvas) {
         canvas.save()
         canvas.translate(position.x, position.y)
         canvas.drawPath(path, paint)
