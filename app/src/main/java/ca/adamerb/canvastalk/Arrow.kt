@@ -39,9 +39,12 @@ class Arrow(private val paint: Paint) {
         this.height = height
     }
 
+    var rotation = 0f
+
     fun draw(canvas: Canvas) {
         canvas.save()
         canvas.translate(position.x, position.y)
+        canvas.rotate(rotation, width / 2, height / 2)
         canvas.drawPath(path, paint)
         canvas.restore()
     }

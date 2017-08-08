@@ -14,7 +14,7 @@ const val Shade5 = 0xff03091B.toInt()
 
 
 const val White = 0xffffffff.toInt()
-const val CodeBackground = 0x88000000.toInt()
+const val CodeBackgroundColor = 0x88000000.toInt()
 
 
 val UbuntuBold =

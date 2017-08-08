@@ -27,7 +27,7 @@ class CodeSnippet(snippet: String) {
     val scaledWidth: Int get() = (scale * width).toInt()
     val scaledHeight: Int get() = (scale * height).toInt()
 
-    fun layout(width: Int) {
+    fun layout(availableWidth: Int, availableHeight: Int) {
         text.layoutText(Int.MAX_VALUE)
         val textPadding = 0f
         text.position.set(textPadding, textPadding)
@@ -42,13 +42,17 @@ class CodeSnippet(snippet: String) {
             logd("Building new bitmap of size $targetWidth x $targetHeight")
             val bitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
-//            canvas.drawColor(CodeBackground)
             text.draw(canvas)
             this.canvas = canvas
             this.bitmap = bitmap
 
             this.width = targetWidth
             this.height = targetHeight
+
+            scale = minOf(
+                availableWidth.toFloat() / width.toFloat(),
+                availableHeight.toFloat() / height.toFloat()
+            )
         }
     }
 
