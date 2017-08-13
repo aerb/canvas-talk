@@ -75,9 +75,9 @@ class Bullets(
         return if(showUpToIndex < texts.size - 1) {
             showUpToIndex ++
             showNextCallback(showUpToIndex)
-            runAnimation { t ->
+            view.runAnimation { t ->
                 alpha = (t * 255).toInt()
-                view.invalidate()
+
             }
             true
         } else false

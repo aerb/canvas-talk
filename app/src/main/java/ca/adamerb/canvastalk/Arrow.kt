@@ -5,7 +5,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
 
-class Arrow(private val paint: Paint) {
+class Arrow(val paint: Paint) {
     val position = PointF()
     val path = Path()
     var bodyWidthRatio = 0.5f

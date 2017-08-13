@@ -5,16 +5,7 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.RectF
 
-class Slide3(private val view: SlideHolderView): Slide {
-
-    private val paint =
-        Paint().apply {
-            textSize = dp(20)
-            color = White
-            typeface = UbuntuBold
-            isAntiAlias = true
-        }
-
+class Slide3(override val view: SlideHolderView): Slide {
     val header = Header(view, "The Basics")
     val bullets = Bullets(
         view = view,
@@ -120,9 +111,7 @@ class Slide3(private val view: SlideHolderView): Slide {
     }
 
     override fun onDraw(canvas: Canvas) {
-        RectBuffer.set(0, 0, view.width, view.height)
-        paint.color = Shade4
-        canvas.drawRect(RectBuffer, paint)
+        canvas.drawBackground(view.width, view.height, Shade1)
 
         canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
 

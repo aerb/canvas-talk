@@ -3,7 +3,7 @@ package ca.adamerb.canvastalk
 import android.graphics.Canvas
 import android.graphics.Paint
 
-class Slide0(private val view: SlideHolderView): Slide {
+class Slide0(override val view: SlideHolderView): Slide {
 
     private val paint =
         Paint().apply {

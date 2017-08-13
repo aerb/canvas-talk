@@ -2,15 +2,15 @@ package ca.adamerb.canvastalk
 
 import android.graphics.*
 
-class ExampleText(private val text: String) {
-
-    val paint = Paint().apply {
+class ExampleText(
+    val text: String,
+    val paint: Paint = Paint().apply {
         textSize = dp(30)
         color = White
         typeface = UbuntuBold
         isAntiAlias = true
     }
-
+) {
     val boundsPaint = Paint().apply {
         color = Shade0
         isAntiAlias = true

@@ -20,7 +20,10 @@ class SlideHolderView(c: Context): View(c) {
             { Slide2(this) },
             { Slide3(this) },
             { Slide4(this) },
-            { Slide5(this) }
+            { Slide5(this) },
+            { Slide6(this) },
+            { Slide7(this) },
+            { Slide8(this) }
         )
 
     var slideIndex = 0

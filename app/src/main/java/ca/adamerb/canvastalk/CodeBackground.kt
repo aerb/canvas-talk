@@ -25,7 +25,7 @@ class CodeBackground(private val view: View, private val header: Header) {
 
     fun animateShow() {
         show = true
-        runAnimation(invalidate = view) { animation = it }
+        view.runAnimation { animation = it }
     }
 
     fun draw(canvas: Canvas) {

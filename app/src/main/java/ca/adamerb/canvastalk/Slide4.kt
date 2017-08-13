@@ -1,19 +1,8 @@
 package ca.adamerb.canvastalk
 
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PointF
-import android.graphics.RectF
+import android.graphics.*
 
-class Slide4(private val view: SlideHolderView): Slide {
-
-    private val paint =
-        Paint().apply {
-            textSize = dp(20)
-            color = White
-            typeface = UbuntuBold
-            isAntiAlias = true
-        }
+class Slide4(override val view: SlideHolderView): Slide {
 
     var header: Header? = Header(view, "More Useful Methods")
     var bullets: Bullets? = Bullets(
@@ -68,9 +57,7 @@ class Slide4(private val view: SlideHolderView): Slide {
     }
 
     override fun onDraw(canvas: Canvas) {
-        RectBuffer.set(0, 0, view.width, view.height)
-        paint.color = Shade4
-        canvas.drawRect(RectBuffer, paint)
+        canvas.drawBackground(view.width, view.height, Shade4)
 
         canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
         codeBackground.draw(canvas)
@@ -132,11 +119,27 @@ class Slide4(private val view: SlideHolderView): Slide {
         },
         {
             codeSnippet = null
-            val arrow = Arrow(examplePaint)
+
+
+            val arrow = Arrow(
+                Paint().apply {
+                    color = White
+                    strokeWidth = StrokeWidth
+                    style = Paint.Style.STROKE
+                    isAntiAlias = true
+                }
+            )
             arrow.layout(dp(50), dp(50))
+            val pathLength = PathMeasure(arrow.path, false).length
+            val intervals = FloatArray(2) { pathLength }
+            arrow.paint.pathEffect = DashPathEffect(intervals, 0f)
+
+
             arrow.position.set(contentCenter.x - arrow.width / 2, contentCenter.y - arrow.height / 2)
             exampleDrawOperation = { arrow.draw(it) }
-            view.invalidate()
+            runAnimation(duration = 1000) { t ->
+                arrow.paint.pathEffect = DashPathEffect(intervals, (1f - t) * pathLength)
+            }
         },
         {
             exampleDrawOperation = null
@@ -165,7 +168,7 @@ class Slide4(private val view: SlideHolderView): Slide {
                 contentCenter.x + rad, contentCenter.y + rad
             )
 
-            runAnimation(duration = 1000, invalidate = view) { angle = 360 * it }
+            runAnimation(duration = 1000) { angle = 270 * it }
             exampleDrawOperation = { canvas ->
                 canvas.drawArc(bounds, 0f, angle, true, examplePaint)
             }
@@ -210,6 +213,23 @@ class Slide4(private val view: SlideHolderView): Slide {
             view.invalidate()
         },
         {
+            val bmp = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
+            val w = dp(60)
+            val h = w * bmp.height / bmp.width
+            val scale = w / bmp.width
+            val matrix = Matrix()
+            matrix.preTranslate(
+                codeBackground.contentBounds.centerX() - w / 2,
+                codeBackground.contentBounds.centerY() - h / 2
+            )
+            matrix.preScale(scale, scale)
+
+            exampleDrawOperation = { canvas ->
+                canvas.drawBitmap(bmp, matrix, null)
+            }
+            view.invalidate()
+        },
+        {
             exampleDrawOperation = null
             bullets?.showNext()
         },
@@ -243,7 +263,7 @@ class Slide4(private val view: SlideHolderView): Slide {
             exampleDrawOperation = {
                 header.draw(it)
             }
-            runAnimation(duration = 1000, invalidate = view) { time ->
+            runAnimation(duration = 1000) { time ->
                 header.title.position.set(position[time])
                 header.lineAnimation = time
                 codeBackground.bounds.left = (view.width / 2) * (1f - time)

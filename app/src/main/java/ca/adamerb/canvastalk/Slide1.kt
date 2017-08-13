@@ -2,7 +2,7 @@ package ca.adamerb.canvastalk
 
 import android.graphics.Canvas
 
-class Slide1(private val view: SlideHolderView): Slide {
+class Slide1(override val view: SlideHolderView): Slide {
 
     val header = Header(view, "Format")
 

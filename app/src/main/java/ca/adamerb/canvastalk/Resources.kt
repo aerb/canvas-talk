@@ -9,11 +9,12 @@ const val Shade1 = 0xff7986AC.toInt()
 const val Shade2 = 0xff4F608F.toInt()
 const val Shade3 = 0xff162756.toInt()
 const val Shade4 = 0xff061439.toInt()
-
 const val Shade5 = 0xff03091B.toInt()
+const val AndroidGreen = 0xffA5C445.toInt()
 
 
 const val White = 0xffffffff.toInt()
+const val Black = 0xff000000.toInt()
 const val CodeBackgroundColor = 0x88000000.toInt()
 
 

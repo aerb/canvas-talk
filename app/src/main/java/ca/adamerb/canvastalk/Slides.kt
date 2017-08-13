@@ -74,6 +74,12 @@ interface Slide {
     fun onLayout(width: Int, height: Int)
     fun onDraw(canvas: Canvas)
     fun nextPressed()
+    val view: SlideHolderView
+
+    fun layoutAndInvalidate() {
+        onLayout(view.width, view.height)
+        view.invalidate()
+    }
 }
 
 

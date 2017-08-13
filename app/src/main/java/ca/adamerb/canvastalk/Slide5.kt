@@ -1,11 +1,10 @@
 package ca.adamerb.canvastalk
 
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 
-class Slide5(private val view: SlideHolderView): Slide {
+class Slide5(override val view: SlideHolderView): Slide {
 
     val header = Header(view, "Draw Text!").also { it.lineAnimation = 1f }
 
@@ -25,13 +24,6 @@ class Slide5(private val view: SlideHolderView): Slide {
         }
     )
 
-    private val examplePaint =
-        Paint().apply {
-            color = White
-            strokeWidth = StrokeWidth
-            style = Paint.Style.STROKE
-            isAntiAlias = true
-        }
     private var exampleDrawOperation: ((Canvas) -> Unit)? = null
         set(value) {
             if(value != null) {
@@ -133,17 +125,15 @@ class Slide5(private val view: SlideHolderView): Slide {
             exampleDrawOperation = {
                 text.draw(it)
             }
+        },
+        {
+            view.slideIn(view.slideIndex + 1, SlideFrom.Bottom)
         }
     )
 
     val codeBackground = CodeBackground(view, header)
 
     var alpha: Int = 255
-
-    fun layoutAndInvalidate() {
-        onLayout(view.width, view.height)
-        view.invalidate()
-    }
 
     val contentCenter = PointF()
     override fun onLayout(width: Int, height: Int) {
@@ -164,8 +154,10 @@ class Slide5(private val view: SlideHolderView): Slide {
         }
     }
 
+
+
     override fun onDraw(canvas: Canvas) {
-        canvas.drawColor(Shade5)
+        canvas.drawBackground(view.width, view.height, Shade5)
 
         canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
 
