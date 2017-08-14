@@ -6,7 +6,7 @@ import android.graphics.PointF
 
 class Slide5(override val view: SlideHolderView): Slide {
 
-    val header = Header(view, "Draw Text!").also { it.lineAnimation = 1f }
+    val header = Header(view, "Drawing Text").also { it.lineAnimation = 1f }
 
     val bullets = Bullets(
         view = view,
@@ -153,8 +153,6 @@ class Slide5(override val view: SlideHolderView): Slide {
             it.position.y = bounds.top
         }
     }
-
-
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawBackground(view.width, view.height, Shade5)

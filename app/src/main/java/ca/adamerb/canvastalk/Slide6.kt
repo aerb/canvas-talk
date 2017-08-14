@@ -4,15 +4,17 @@ import android.graphics.*
 
 class Slide6(override val view: SlideHolderView): Slide {
 
-    val header = Header(view, "Shaders & Color Filters")
+    val header = Header(view, "Drawing Bitmaps")
 
     val bullets = Bullets(
         view = view,
         bullets = listOf(
+            "Use drawBitmap for handling bitmaps.",
             "Paint can be assigned a shader, for specialized fill effects.",
             "You can use BitmapShader to crop bitmaps to shapes.",
-            "Gradient effect can also be achieved with Linear, Radial, Sweet Gradient shaders.",
-            "Paint can be assigned color filter. Useful for icon re-use."
+//            "Gradient effect can also be achieved with Linear, Radial, Sweet Gradient shaders.",
+            "Paint can be assigned color filter. Useful for icon re-use.",
+            "You can also use renderscript to apply affects.."
         ),
         paint = Paint().apply {
             textSize = dp(13)
@@ -46,9 +48,49 @@ class Slide6(override val view: SlideHolderView): Slide {
 
     val actions = ActionSequence(
         { bullets.showNext() },
-        { bullets.showNext() },
         {
             codeBackground.animateShow()
+            code = CodeSnippet("""
+Bitmap bitmap = //
+Matrix m = Matrix();
+m.setScale(xscale, yscale);
+m.setTranslation(x, y);
+
+canvas.drawBitmap(
+    bitmap,
+    m,
+    paint
+);
+            """)
+        },
+        {
+            code = null
+            val paint = Paint()
+
+            val bitmap = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
+            val w = dp(150)
+            val h = w * bitmap.height / bitmap.width
+            val scale = w / bitmap.width
+
+            val matrix = codeBackground.contentBounds.let {
+                Matrix().apply {
+                    preTranslate(it.centerX() - w / 2, it.centerY() - h / 2)
+                    preScale(scale, scale)
+                }
+            }
+            exampleDrawOperation = { canvas ->
+                canvas.drawBitmap(bitmap, matrix, paint)
+            }
+            runAnimation(duration = 1000) { t ->
+                paint.alpha = (t * 255).toInt()
+            }
+        },
+        {
+            exampleDrawOperation = null
+            bullets.showNext()
+        },
+        {
+
             code = CodeSnippet("""
 Bitmap bitmap = //
 BitmapShader shader =
@@ -92,6 +134,7 @@ canvas.drawCircle(0f, 0f,
                 rad = t * codeBackground.contentBounds.width() / 2
             }
         },
+        { bullets.showNext() },
         {
             val bmp = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
             val w = dp(150)
@@ -185,58 +228,59 @@ canvas.drawCircle(0f, 0f,
                 arrow.draw(canvas)
             }
         },
+//        {
+//            exampleDrawOperation = null
+//            bullets.showNext()
+//        },
+//        {
+//            code = CodeSnippet("""
+//
+//SweepGradient shader =
+//    new SweepGradient(
+//        centerX, centerY,
+//        new Int[] { 0, Color.RED },
+//        new Float[] { 0f, 1f }
+//    );
+//
+//Paint paint = new Paint();
+//paint.setShader(shader);
+//
+//canvas.drawCircle(0f, 0f,
+//    radius, paint);
+//            """)
+//        },
+//        {
+//            code = null
+//
+//            val center = codeBackground.contentBounds.let {
+//                PointF(it.centerX(), it.centerY())
+//            }
+//
+//            val paint = Paint().apply {
+//                color = White
+//                shader = SweepGradient(
+//                    center.x, center.y,
+//                    intArrayOf(Color.TRANSPARENT, Color.RED),
+//                    floatArrayOf(0f, 0f)
+//                )
+//                isAntiAlias = true
+//            }
+//
+//            var rad: Float = 0f
+//            exampleDrawOperation = { canvas ->
+//                canvas.drawCircle(center.x, center.y, rad, paint)
+//            }
+//            runAnimation(duration = 1000) { t ->
+//                rad = t * codeBackground.contentBounds.width() / 2
+//                paint.shader = SweepGradient(
+//                    center.x, center.y,
+//                    intArrayOf(Color.TRANSPARENT, Color.RED),
+//                    floatArrayOf(0f, t * 0.99f)
+//                )
+//            }
+//        },
         {
             exampleDrawOperation = null
-            bullets.showNext()
-        },
-        {
-            code = CodeSnippet("""
-
-SweepGradient shader =
-    new SweepGradient(
-        centerX, centerY,
-        new Int[] { 0, Color.RED },
-        new Float[] { 0f, 1f }
-    );
-
-Paint paint = new Paint();
-paint.setShader(shader);
-
-canvas.drawCircle(0f, 0f,
-    radius, paint);
-            """)
-        },
-        {
-            code = null
-
-            val center = codeBackground.contentBounds.let {
-                PointF(it.centerX(), it.centerY())
-            }
-
-            val paint = Paint().apply {
-                color = White
-                shader = SweepGradient(
-                    center.x, center.y,
-                    intArrayOf(Color.TRANSPARENT, Color.RED),
-                    floatArrayOf(0f, 0f)
-                )
-                isAntiAlias = true
-            }
-
-            var rad: Float = 0f
-            exampleDrawOperation = { canvas ->
-                canvas.drawCircle(center.x, center.y, rad, paint)
-            }
-            runAnimation(duration = 1000) { t ->
-                rad = t * codeBackground.contentBounds.width() / 2
-                paint.shader = SweepGradient(
-                    center.x, center.y,
-                    intArrayOf(Color.TRANSPARENT, Color.RED),
-                    floatArrayOf(0f, t * 0.99f)
-                )
-            }
-        },
-        {
             bullets.showNext()
         },
         {
@@ -267,13 +311,43 @@ canvas.drawCircle(0f, 0f,
                 )
             }
         },
+//        {
+//            runAnimation(duration = 1000) { t ->
+//                matrix.setSaturation(1f - t)
+//                paint.colorFilter =
+//                    ColorMatrixColorFilter(
+//                        matrix
+//                    )
+//            }
+//        },
         {
+            exampleDrawOperation = null
+            bullets.showNext()
+        },
+        {
+            code = null
+            val paint = Paint()
+            val paint1 = Paint()
+
+            val bitmap = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
+            val blurred = bitmap.blur(25f).blur(25f)
+            val w = dp(150)
+            val h = w * bitmap.height / bitmap.width
+            val scale = w / bitmap.width
+
+            val matrix = codeBackground.contentBounds.let {
+                Matrix().apply {
+                    preTranslate(it.centerX() - w / 2, it.centerY() - h / 2)
+                    preScale(scale, scale)
+                }
+            }
+            exampleDrawOperation = { canvas ->
+                canvas.drawBitmap(bitmap, matrix, paint1)
+                canvas.drawBitmap(blurred, matrix, paint)
+            }
             runAnimation(duration = 1000) { t ->
-                matrix.setSaturation(1f - t)
-                paint.colorFilter =
-                    ColorMatrixColorFilter(
-                        matrix
-                    )
+                paint.alpha = (t * 255).toInt()
+                paint1.alpha = ((1f - t) * 255).toInt()
             }
         },
         {

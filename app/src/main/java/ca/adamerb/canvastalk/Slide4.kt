@@ -124,12 +124,12 @@ class Slide4(override val view: SlideHolderView): Slide {
             val arrow = Arrow(
                 Paint().apply {
                     color = White
-                    strokeWidth = StrokeWidth
+                    strokeWidth = dp(5)
                     style = Paint.Style.STROKE
                     isAntiAlias = true
                 }
             )
-            arrow.layout(dp(50), dp(50))
+            arrow.layout(codeBackground.contentBounds.width(), codeBackground.contentBounds.height())
             val pathLength = PathMeasure(arrow.path, false).length
             val intervals = FloatArray(2) { pathLength }
             arrow.paint.pathEffect = DashPathEffect(intervals, 0f)
@@ -148,21 +148,30 @@ class Slide4(override val view: SlideHolderView): Slide {
         {
             codeSnippet =
                 CodeSnippet("""
-                    var angle = 0f
-                    val rad = dp(30)
-                    val bounds = RectF(
-                        contentCenter.x - rad, contentCenter.y - rad,
-                        contentCenter.x + rad, contentCenter.y + rad
-                    )
-                    canvas.drawArc(bounds, 0f, angle, true, examplePaint)"""
+                    canvas.drawArc(
+                        bounds,
+                        startingAngle,
+                        sweepAngle,
+                        true,
+                        paint
+                    )"""
                 )
             onLayout(view.width, view.height)
             view.invalidate()
         },
         {
             codeSnippet = null
+            val paint =
+                Paint().apply {
+                    color = White
+                    strokeWidth = dp(5)
+                    style = Paint.Style.STROKE
+                    isAntiAlias = true
+                }
+
+
             var angle = 0f
-            val rad = dp(30)
+            val rad = codeBackground.contentBounds.width() / 2
             val bounds = RectF(
                 contentCenter.x - rad, contentCenter.y - rad,
                 contentCenter.x + rad, contentCenter.y + rad
@@ -170,7 +179,7 @@ class Slide4(override val view: SlideHolderView): Slide {
 
             runAnimation(duration = 1000) { angle = 270 * it }
             exampleDrawOperation = { canvas ->
-                canvas.drawArc(bounds, 0f, angle, true, examplePaint)
+                canvas.drawArc(bounds, 0f, angle, true, paint)
             }
         },
         {
@@ -178,7 +187,13 @@ class Slide4(override val view: SlideHolderView): Slide {
             bullets?.showNext()
         },
         {
-            codeSnippet = CodeSnippet("canvas.drawRoundRect(bounds, dp(5), dp(5), paint)")
+            codeSnippet = CodeSnippet("""
+                canvas.drawRoundRect(
+                    bounds,
+                    radius,
+                    radius,
+                    paint
+                )""")
             onLayout(view.width, view.height)
             view.invalidate()
         },
@@ -187,7 +202,7 @@ class Slide4(override val view: SlideHolderView): Slide {
 
             val textPaint =
                 Paint().apply {
-                    textSize = dp(12)
+                    textSize = dp(25)
                     color = White
                     typeface = UbuntuBold
                     isAntiAlias = true
@@ -200,7 +215,7 @@ class Slide4(override val view: SlideHolderView): Slide {
             textPosition.x = contentCenter.x - RectBuffer.width() / 2
             textPosition.y = contentCenter.y + RectBuffer.height() / 2
 
-            bounds.set(0f, 0f, RectBuffer.width() + PaddingF * 2, RectBuffer.height() + PaddingF)
+            bounds.set(0f, 0f, RectBuffer.width() + PaddingF * 3, RectBuffer.height() + PaddingF * 2)
             bounds.offsetTo(
                 contentCenter.x - bounds.width() / 2,
                 contentCenter.y - bounds.height() / 2
@@ -210,31 +225,14 @@ class Slide4(override val view: SlideHolderView): Slide {
                 canvas.drawRoundRect(bounds, dp(5), dp(5), examplePaint)
                 canvas.drawText(text, textPosition.x, textPosition.y, textPaint)
             }
-            view.invalidate()
-        },
-        {
-            val bmp = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
-            val w = dp(60)
-            val h = w * bmp.height / bmp.width
-            val scale = w / bmp.width
-            val matrix = Matrix()
-            matrix.preTranslate(
-                codeBackground.contentBounds.centerX() - w / 2,
-                codeBackground.contentBounds.centerY() - h / 2
-            )
-            matrix.preScale(scale, scale)
-
-            exampleDrawOperation = { canvas ->
-                canvas.drawBitmap(bmp, matrix, null)
-            }
-            view.invalidate()
+            runAnimation { textPaint.alpha = (it * 255).toInt() }
         },
         {
             exampleDrawOperation = null
             bullets?.showNext()
         },
         {
-            val header = Header(view, "Draw Text!")
+            val header = Header(view, "Drawing Text")
             header.layout(view.width)
             header.title.let {
                 it.position.x = contentCenter.x - it.width / 2
@@ -246,7 +244,7 @@ class Slide4(override val view: SlideHolderView): Slide {
             view.invalidate()
         },
         {
-            val header = Header(view, "Draw Text!")
+            val header = Header(view, "Drawing Text")
             header.layout(view.width)
 
             val position = Interpolation(

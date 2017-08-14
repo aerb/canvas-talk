@@ -1,19 +1,19 @@
 package ca.adamerb.canvastalk
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Paint
+import android.graphics.*
 
 class Slide7(override val view: SlideHolderView): Slide {
 
-    val header = Header(view, "Custom Canvas")
+    val header = Header(view, "Canv-ception!")
 
     val bullets = Bullets(
         view = view,
         bullets = listOf(
             "You can create a bitmap backed Canvas, and just draw to a bitmap.",
-            "Useful for applying blur operation."
+            "Any view, or canvas can be manipulated as if a bitmap.",
+            "Useful for applying blur operation.",
+            "Color filters.",
+            "And efficient animations."
         ),
         paint = Paint().apply {
             textSize = dp(13)
@@ -61,7 +61,7 @@ view.onDraw(canvas);
             val matrix = Matrix()
 
             exampleDrawOperation = {
-                it.drawColor(mixColor(Black, 0, 0.25f))
+                it.drawColor(SemiTransparentBlack)
                 it.drawBitmap(bitmap, matrix, null)
             }
             runAnimation { t ->
@@ -104,6 +104,35 @@ view.onDraw(canvas);
         },
         {
             exampleDrawOperation = null
+        },
+        {
+            val bitmap =
+                Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                    .also { onDraw(Canvas(it)) }
+
+            val paint = Paint()
+            val scale = 0.75f
+            val matrix =
+                Matrix().apply {
+                    setTranslate(
+                        view.width / 2 - view.width * scale / 2,
+                        view.height / 2 - view.height * scale / 2
+                    )
+                    preScale(scale, scale)
+                }
+
+            val colorMatrix = ColorMatrix()
+
+            exampleDrawOperation = {
+                it.drawBitmap(bitmap, matrix, paint)
+            }
+            runAnimation(duration = 1000) { t ->
+                colorMatrix.setSaturation(1f - t)
+                paint.colorFilter =
+                    ColorMatrixColorFilter(
+                        colorMatrix
+                    )
+            }
         },
         {
             view.slideIn(view.slideIndex + 1, SlideFrom.Right)

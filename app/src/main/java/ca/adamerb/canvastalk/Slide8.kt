@@ -1,8 +1,6 @@
 package ca.adamerb.canvastalk
 
-import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Matrix
 import android.graphics.Paint
 
 class Slide8(override val view: SlideHolderView): Slide {
@@ -37,7 +35,7 @@ class Slide8(override val view: SlideHolderView): Slide {
 
     private val alpha: Int = 255
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBackground(view.width, view.height, Shade4)
+        canvas.drawBackground(view.width, view.height, Shade2)
 
         canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
 

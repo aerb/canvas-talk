@@ -15,12 +15,12 @@ class SlideHolderView(c: Context): View(c) {
 
     val slides =
         listOf(
-            { Slide0(this) },
-            { Slide1(this) },
-            { Slide2(this) },
-            { Slide3(this) },
-            { Slide4(this) },
-            { Slide5(this) },
+//            { Slide0(this) },
+//            { Slide1(this) },
+//            { Slide2(this) },
+//            { Slide3(this) },
+//            { Slide4(this) },
+//            { Slide5(this) },
             { Slide6(this) },
             { Slide7(this) },
             { Slide8(this) }

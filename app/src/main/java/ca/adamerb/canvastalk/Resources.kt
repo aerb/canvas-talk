@@ -16,6 +16,7 @@ const val AndroidGreen = 0xffA5C445.toInt()
 const val White = 0xffffffff.toInt()
 const val Black = 0xff000000.toInt()
 const val CodeBackgroundColor = 0x88000000.toInt()
+val SemiTransparentBlack = mixColor(0, Black, 0.8f)
 
 
 val UbuntuBold =
