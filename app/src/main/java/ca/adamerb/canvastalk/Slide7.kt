@@ -78,6 +78,9 @@ view.onDraw(canvas);
             bullets.showNext()
         },
         {
+            bullets.showNext()
+        },
+        {
             val bitmap =
                 Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
                     .also { onDraw(Canvas(it)) }
@@ -96,7 +99,7 @@ view.onDraw(canvas);
                 }
 
             exampleDrawOperation = {
-                it.drawColor(mixColor(Black, 0, 0.25f))
+                it.drawColor(SemiTransparentBlack)
                 it.drawBitmap(bitmap, matrix, null)
                 it.drawBitmap(blurred, matrix, paint)
             }
@@ -104,6 +107,7 @@ view.onDraw(canvas);
         },
         {
             exampleDrawOperation = null
+            bullets.showNext()
         },
         {
             val bitmap =
@@ -124,6 +128,7 @@ view.onDraw(canvas);
             val colorMatrix = ColorMatrix()
 
             exampleDrawOperation = {
+                it.drawColor(SemiTransparentBlack)
                 it.drawBitmap(bitmap, matrix, paint)
             }
             runAnimation(duration = 1000) { t ->
@@ -132,6 +137,44 @@ view.onDraw(canvas);
                     ColorMatrixColorFilter(
                         colorMatrix
                     )
+            }
+        },
+        {
+            exampleDrawOperation = null
+            bullets.showNext()
+        },
+        {
+            val bitmap =
+                Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+                    .also { onDraw(Canvas(it)) }
+
+            val paint = Paint()
+            val scale = 0.75f
+            val matrix =
+                Matrix().apply {
+                    setTranslate(
+                        view.width / 2 - view.width * scale / 2,
+                        view.height / 2 - view.height * scale / 2
+                    )
+                    preScale(scale, scale)
+
+                }
+
+            exampleDrawOperation = {
+                it.drawColor(SemiTransparentBlack)
+                it.drawBitmap(bitmap, matrix, paint)
+            }
+            runAnimation(duration = 1000) { t ->
+                matrix.reset()
+                matrix.preRotate(t * 360,
+                    bitmap.width / 2f,
+                    bitmap.height / 2f
+                )
+                matrix.preTranslate(
+                    view.width / 2 - view.width * scale / 2,
+                    view.height / 2 - view.height * scale / 2
+                )
+                matrix.preScale(scale, scale)
             }
         },
         {
