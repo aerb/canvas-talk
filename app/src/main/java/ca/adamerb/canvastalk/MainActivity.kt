@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.PointF
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.MotionEvent
 import android.view.View
 
 enum class SlideFrom {
@@ -42,10 +43,15 @@ class SlideHolderView(c: Context): View(c) {
     var incomingSlide: Slide? = null
 
     init {
-        setOnClickListener {
-            if(runningAnimations == 0) {
-                slide.nextPressed()
+        setOnTouchListener { _, event ->
+            if(runningAnimations == 0 && event.actionMasked == MotionEvent.ACTION_UP) {
+                if(event.x > PaddingF) {
+                    slide.nextPressed()
+                } else {
+                    slide = slides[--slideIndex]()
+                }
             }
+            true
         }
     }
 

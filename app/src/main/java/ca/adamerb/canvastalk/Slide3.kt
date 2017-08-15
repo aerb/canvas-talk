@@ -111,7 +111,7 @@ class Slide3(override val view: SlideHolderView): Slide {
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBackground(view.width, view.height, Shade1)
+        canvas.drawBackground(view.width, view.height, Shade2)
 
         canvas.saveLayerAlpha(0f, 0f, view.width.toFloat(), view.height.toFloat(), alpha, Canvas.ALL_SAVE_FLAG)
 

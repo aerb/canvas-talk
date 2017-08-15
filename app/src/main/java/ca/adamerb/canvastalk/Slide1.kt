@@ -10,9 +10,9 @@ class Slide1(override val view: SlideHolderView): Slide {
         view = view,
         bullets = listOf(
             "These slides are created using only the Android Canvas Api.",
-            "One Activity, One Overriden view, Zero Fragments.",
-            "No libraries with the exception of the Kotlin StdLib.",
-            "Download the app @ _________"
+            "Single Activity as window for canvas.",
+            "No views, fragments, or third-party libs.",
+            "Source code @ github.com/aerb/canvas-talk"
         )
     )
 

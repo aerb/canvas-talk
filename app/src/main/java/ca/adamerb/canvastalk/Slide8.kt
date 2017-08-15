@@ -5,25 +5,33 @@ import android.graphics.Paint
 
 class Slide8(override val view: SlideHolderView): Slide {
 
-    val header = Header(view, "Thanks")
+    val header = Header(view, "That's All!")
 
     val bullets = Bullets(
         view = view,
         bullets = listOf(
             "Adam Erb",
             "@erbal",
-            "adam.l.erb@gmail.com"
+            "adam.l.erb@gmail.com",
+            "github.com/aerb/canvas-talk"
         ),
         paint = Paint().apply {
-            textSize = dp(13)
+            textSize = dp(15)
             color = White
             typeface = UbuntuBold
             isAntiAlias = true
         }
-    ).also { it.showUpToIndex = 2 }
+    )
 
     init {
         runAnimation { t -> header.lineAnimation = t }
+        animateBullets()
+    }
+
+    fun animateBullets() {
+        if(bullets.showNext()) {
+            view.postDelayed({ animateBullets() }, 500)
+        }
     }
 
     override fun onLayout(width: Int, height: Int) {

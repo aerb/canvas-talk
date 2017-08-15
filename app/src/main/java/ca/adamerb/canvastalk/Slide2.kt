@@ -103,9 +103,9 @@ class Slide2(override val view: SlideHolderView): Slide {
         items += MultiLineText(
             text = when (items.size) {
                 0 -> "Android Layouts & Resource XML"
-                1 -> "Views (LinearLayout / ImageView / TextView)"
+                1 -> "Views (LinearLayout / ImageView / Drawable)"
                 2 -> "Canvas API"
-                3 -> "OpenGL Display List, Software Drawing Commands"
+                3 -> "Skia / OpenGL"
                 else -> throw IllegalStateException()
             },
             align = Align.Center

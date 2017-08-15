@@ -182,6 +182,37 @@ class Slide4(override val view: SlideHolderView): Slide {
                 canvas.drawArc(bounds, 0f, angle, true, paint)
             }
         },
+//        {
+//            codeSnippet = null
+//            val paint =
+//                Paint().apply {
+//                    color = White
+//                    strokeWidth = dp(5)
+//                    style = Paint.Style.STROKE
+//                    isAntiAlias = true
+//                }
+//
+//
+//            var angle0 = 0f
+//            var angle1 = 0f
+//            val rad = codeBackground.contentBounds.width() / 2
+//            val bounds = RectF(
+//                contentCenter.x - rad, contentCenter.y - rad,
+//                contentCenter.x + rad, contentCenter.y + rad
+//            )
+//
+//            runAnimation(duration = 2000) {
+//                angle0 = (360 * it) % 360
+//                angle1 = angle0 * 1.01f % 360
+//            }
+//            exampleDrawOperation = { canvas ->
+//                if(angle0 < angle1) {
+//                    canvas.drawArc(bounds, angle0, angle1, false, paint)
+//                } else {
+//                    canvas.drawArc(bounds, angle1, angle0, false, paint)
+//                }
+//            }
+//        },
         {
             exampleDrawOperation = null
             bullets?.showNext()

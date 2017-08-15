@@ -13,8 +13,8 @@ class Slide6(override val view: SlideHolderView): Slide {
             "Paint can be assigned a shader, for specialized fill effects.",
             "You can use BitmapShader to crop bitmaps to shapes.",
 //            "Gradient effect can also be achieved with Linear, Radial, Sweet Gradient shaders.",
-            "Paint can be assigned color filter. Useful for icon re-use.",
-            "You can also use renderscript to apply affects.."
+            "Paint can be assigned color filter. Useful for icon re-use."
+//            "You can also use renderscript to apply affects.."
         ),
         paint = Paint().apply {
             textSize = dp(13)
@@ -320,36 +320,36 @@ canvas.drawCircle(0f, 0f,
 //                    )
 //            }
 //        },
-        {
-            exampleDrawOperation = null
-            bullets.showNext()
-        },
-        {
-            code = null
-            val paint = Paint()
-            val paint1 = Paint()
-
-            val bitmap = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
-            val blurred = bitmap.blur(25f).blur(25f)
-            val w = dp(150)
-            val h = w * bitmap.height / bitmap.width
-            val scale = w / bitmap.width
-
-            val matrix = codeBackground.contentBounds.let {
-                Matrix().apply {
-                    preTranslate(it.centerX() - w / 2, it.centerY() - h / 2)
-                    preScale(scale, scale)
-                }
-            }
-            exampleDrawOperation = { canvas ->
-                canvas.drawBitmap(bitmap, matrix, paint1)
-                canvas.drawBitmap(blurred, matrix, paint)
-            }
-            runAnimation(duration = 1000) { t ->
-                paint.alpha = (t * 255).toInt()
-                paint1.alpha = ((1f - t) * 255).toInt()
-            }
-        },
+//        {
+//            exampleDrawOperation = null
+//            bullets.showNext()
+//        },
+//        {
+//            code = null
+//            val paint = Paint()
+//            val paint1 = Paint()
+//
+//            val bitmap = BitmapFactory.decodeResource(view.context.resources, R.drawable.android)
+//            val blurred = bitmap.blur(25f).blur(25f)
+//            val w = dp(150)
+//            val h = w * bitmap.height / bitmap.width
+//            val scale = w / bitmap.width
+//
+//            val matrix = codeBackground.contentBounds.let {
+//                Matrix().apply {
+//                    preTranslate(it.centerX() - w / 2, it.centerY() - h / 2)
+//                    preScale(scale, scale)
+//                }
+//            }
+//            exampleDrawOperation = { canvas ->
+//                canvas.drawBitmap(bitmap, matrix, paint1)
+//                canvas.drawBitmap(blurred, matrix, paint)
+//            }
+//            runAnimation(duration = 1000) { t ->
+//                paint.alpha = (t * 255).toInt()
+//                paint1.alpha = ((1f - t) * 255).toInt()
+//            }
+//        },
         {
             view.slideIn(view.slideIndex + 1, SlideFrom.Left)
         }
