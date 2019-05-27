@@ -9,3 +9,4 @@ google-services.json
 .DS_Store
 .tmp/
 fabric.properties
+reports/
